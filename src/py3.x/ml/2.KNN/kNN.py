@@ -176,8 +176,10 @@ def file2matrix(filename):
     numberOfLines = len(fr.readlines())
     # 生成对应的空矩阵
     # 例如: zeros(2，3)就是生成一个 2*3 的矩阵，各个位置上全是 0 
-    returnMat = zeros((numberOfLines, 3))  # prepare matrix to return
+    returnMat = zeros((numberOfLines, 3))  #prepare matrix to return
+    # 类型 1,2,3# 不喜欢的人、魅力一般的人、极具魅力的人
     classLabelVector = []  # prepare labels return
+    # 只读模式打开
     fr = open(filename, 'r')
     index = 0
     for line in fr.readlines():
@@ -210,14 +212,29 @@ def autoNorm(dataSet):
         其中的 min 和 max 分别是数据集中的最小特征值和最大特征值。该函数可以自动将数字特征值转化为0到1的区间。
     """
     # 计算每种属性的最大值、最小值、范围
+    #A.min(0): 返回A每一列最小值组成的一维数组；
+    #A.min(1)：返回A每一行最小值组成的一维数组；
+    #A.max(0)：返回A每一列最大值组成的一维数组；
+    #A.max(1)：返回A每一行最大值组成的一维数组；
+    #这里的0表示行，1
+    #表示列
+    # minVals 是[0.       0.       0.001156]
     minVals = dataSet.min(0)
+    # [9.1273000e+04 2.0919349e+01 1.6955170e+00]
     maxVals = dataSet.max(0)
     # 极差
     ranges = maxVals - minVals
     # -------第一种实现方式---start-------------------------
+    # shape函数是numpy.core.fromnumeric中的函数，它的功能是读取矩阵的长度，比如shape[0]就是读取矩阵第一维度的长度
+    # 全部是0的 1000 * 3 矩阵
     normDataSet = zeros(shape(dataSet))
+    #shape[0]就是读取矩阵第一维度的长度 1000
     m = dataSet.shape[0]
     # 生成与最小值之差组成的矩阵
+    # 功能是重复某个数组。比如tile(A,n)，功能是将数组A重复n次，构成一个新的数组 参考：https://blog.csdn.net/weixin_29643235/article/details/111922101 和 https://blog.csdn.net/laobai1015/article/details/85719724
+    a = tile(minVals, (m, 1))
+    # (m, 1) 结果是1000，求最大值?
+    #tile(minVals, (m, 1))
     normDataSet = dataSet - tile(minVals, (m, 1))
     # 将最小值之差除以范围组成矩阵
     normDataSet = normDataSet / tile(ranges, (m, 1))  # element wise divide
@@ -241,7 +258,7 @@ def datingClassTest():
     # 设置测试数据的的一个比例（训练数据集比例=1-hoRatio）
     hoRatio = 0.1  # 测试范围,一部分测试一部分作为样本
     # 从文件中加载数据
-    datingDataMat, datingLabels = file2matrix("data/2.KNN/datingTestSet2.txt")  # load data setfrom file
+    datingDataMat, datingLabels = file2matrix("D:\\temp\\data-master\\机器学习\\2.KNN\\datingTestSet2.txt")  # load data setfrom file
     # 归一化数据
     normMat, ranges, minVals = autoNorm(datingDataMat)
     # m 表示数据的行数，即矩阵的第一维
@@ -291,7 +308,7 @@ def handwritingClassTest():
     """
     # 1. 导入数据
     hwLabels = []
-    trainingFileList = os.listdir("data/2.KNN/trainingDigits") # load the training set
+    trainingFileList = os.listdir("D:\\temp\data-master\\机器学习\\2.KNN\\trainingDigits") # load the training set
     m = len(trainingFileList)
     trainingMat = zeros((m, 1024))
     # hwLabels存储0～9对应的index位置， trainingMat存放的每个位置对应的图片向量
@@ -301,17 +318,17 @@ def handwritingClassTest():
         classNumStr = int(fileStr.split('_')[0])
         hwLabels.append(classNumStr)
         # 将 32*32的矩阵->1*1024的矩阵
-        trainingMat[i] = img2vector('data/2.KNN/trainingDigits/%s' % fileNameStr)
+        trainingMat[i] = img2vector('D:\\temp\\data-master\\机器学习\\2.KNN\\trainingDigits\%s' % fileNameStr)
 
     # 2. 导入测试数据
-    testFileList = os.listdir('data/2.KNN/testDigits')  # iterate through the test set
+    testFileList = os.listdir('D:\\temp\\data-master\\机器学习\\2.KNN\\testDigits')  # iterate through the test set
     errorCount = 0
     mTest = len(testFileList)
     for i in range(mTest):
         fileNameStr = testFileList[i]
         fileStr = fileNameStr.split('.')[0]  # take off .txt
         classNumStr = int(fileStr.split('_')[0])
-        vectorUnderTest = img2vector('data/2.KNN/testDigits/%s' % fileNameStr)
+        vectorUnderTest = img2vector('D:\\temp\\data-master\\机器学习\\2.KNN\\testDigits\\%s' % fileNameStr)
         classifierResult = classify0(vectorUnderTest, trainingMat, hwLabels, 3)
         print("the classifier came back with: %d, the real answer is: %d" % (classifierResult, classNumStr))
         errorCount += classifierResult != classNumStr
@@ -321,5 +338,5 @@ def handwritingClassTest():
 
 if __name__ == '__main__':
     # test1()
-    # datingClassTest()
-    handwritingClassTest()
+    datingClassTest()
+    # handwritingClassTest()
