@@ -73,7 +73,7 @@ def calcShannonEnt(dataSet):
     shannonEnt = 0.0
     for key in labelCounts:
         # 使用所有类标签的发生频率计算类别出现的概率。
-        prob = float(labelCounts[key])/numEntries
+        prob = float(labelCounts[key]) / numEntries
         # log base 2
         # 计算香农熵，以 2 为底求对数
         shannonEnt -= prob * log(prob, 2)
@@ -106,7 +106,7 @@ def splitDataSet(dataSet, index, value):
     """
     # -----------切分数据集的第一种方式 start------------------------------------
     retDataSet = []
-    for featVec in dataSet: 
+    for featVec in dataSet:
         # index列为value的数据集【该数据集需要排除index列】
         # 判断index列的值是否为value
         if featVec[index] == value:
@@ -131,7 +131,7 @@ def splitDataSet(dataSet, index, value):
             [1, 2, 3, [4, 5, 6]]
             [1, 2, 3, [4, 5, 6], 7, 8, 9]
             '''
-            reducedFeatVec.extend(featVec[index+1:])
+            reducedFeatVec.extend(featVec[index + 1:])
             # [index+1:]表示从跳过 index 的 index+1行，取接下来的数据
             # 收集结果值 index列为value的行【该行需要排除index列】
             retDataSet.append(reducedFeatVec)
@@ -174,7 +174,7 @@ def chooseBestFeatureToSplit(dataSet):
         # 遍历当前特征中的所有唯一属性值，对每个唯一属性值划分一次数据集，计算数据集的新熵值，并对所有唯一特征值得到的熵求和。
         for value in uniqueVals:
             subDataSet = splitDataSet(dataSet, i, value)
-            prob = len(subDataSet)/float(len(dataSet))
+            prob = len(subDataSet) / float(len(dataSet))
             newEntropy += prob * calcShannonEnt(subDataSet)
         # gain[信息增益]: 划分数据集前后的信息变化， 获取信息熵最大的值
         # 信息增益是熵的减少或者是数据无序度的减少。最后，比较所有特征中的信息增益，返回最好特征划分的索引值。
@@ -264,7 +264,7 @@ def createTree(dataSet, labels):
     myTree = {bestFeatLabel: {}}
     # 注: labels列表是可变对象，在PYTHON函数中作为参数时传址引用，能够被全局修改
     # 所以这行代码导致函数外的同名变量被删除了元素，造成例句无法执行，提示'no surfacing' is not in list
-    del(labels[bestFeat])
+    del (labels[bestFeat])
     # 取出最优列，然后它的branch做分类
     featValues = [example[bestFeat] for example in dataSet]
     uniqueVals = set(featValues)
@@ -306,66 +306,42 @@ def classify(inputTree, featLabels, testVec):
     return classLabel
 
 
-def storeTree(inputTree, filename):
+
+
+
+
+def fishTest():
     """
     Desc:
-        将之前训练好的决策树模型存储起来，使用 pickle 模块
+        对动物是否是鱼类分类的测试函数，并将结果使用 matplotlib 画出来
     Args:
-        inputTree -- 以前训练好的决策树模型
-        filename -- 要存储的名称
+        None
     Returns:
         None
     """
-    import pickle
-    # -------------- 第一种方法 start --------------
-    fw = open(filename, 'wb')
-    pickle.dump(inputTree, fw)
-    fw.close()
-    # -------------- 第一种方法 end --------------
+    # 1.创建数据和结果标签
+    myDat, labels = createDataSet()
+    # print(myDat, labels)
 
-    # -------------- 第二种方法 start --------------
-    with open(filename, 'wb') as fw:
-        pickle.dump(inputTree, fw)
-    # -------------- 第二种方法 start --------------
+    # 计算label分类标签的香农熵
+    # calcShannonEnt(myDat)
 
+    # # 求第0列 为 1/0的列的数据集【排除第0列】
+    # print('1---', splitDataSet(myDat, 0, 1))
+    # print('0---', splitDataSet(myDat, 0, 0))
 
-def grabTree(filename):
-    """
-    Desc:
-        将之前存储的决策树模型使用 pickle 模块 还原出来
-    Args:
-        filename -- 之前存储决策树模型的文件名
-    Returns:
-        pickle.load(fr) -- 将之前存储的决策树模型还原出来
-    """
-    import pickle
-    fr = open(filename, 'rb')
-    return pickle.load(fr)
+    # # 计算最好的信息增益的列
+    # print(chooseBestFeatureToSplit(myDat))
 
+    import copy
+    myTree = createTree(myDat, copy.deepcopy(labels))
+    print(myTree)
+    # [1, 1]表示要取的分支上的节点位置，对应的结果值
+    print(classify(myTree, labels, [1, 1]))
 
-
-def ContactLensesTest():
-    """
-    Desc:
-        预测隐形眼镜的测试代码，并将结果画出来
-    Args:
-        none
-    Returns:
-        none
-    """
-
-    # 加载隐形眼镜相关的 文本文件 数据
-    fr = open('data/3.DecisionTree/lenses.txt')
-    # 解析数据，获得 features 数据
-    lenses = [inst.strip().split('\t') for inst in fr.readlines()]
-    # 得到数据的对应的 Labels
-    lensesLabels = ['age', 'prescript', 'astigmatic', 'tearRate']
-    # 使用上面的创建决策树的代码，构造预测隐形眼镜的决策树
-    lensesTree = createTree(lenses, lensesLabels)
-    print(lensesTree)
     # 画图可视化展现
-    dtPlot.createPlot(lensesTree)
+    dtPlot.createPlot(myTree)
 
 
 if __name__ == "__main__":
-    ContactLensesTest()
+    fishTest()
